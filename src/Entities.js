@@ -4,28 +4,17 @@ class Document
   constructor()
   {
 
-    this.Value="";
+    this.value="";
 
     this.terms={};
 
     //length af remving stop words and stemming terms
     this.length=0;
 
-    this.SetIndex=0;
+    this.isEndedProperly=null;
   }
 
 
-  get Color()
-  {
-    var value=this.SetIndex;
-
-    value >>>= 0;
-    var b = value & 0xFF,
-        g = (value & 0xFF00) >>> 8,
-        r = (value & 0xFF0000) >>> 16,
-        a = ( (value & 0xFF000000) >>> 24 ) / 255 ;
-    return "rgba(" + [r, g, b, 1].join(",") + ")";
-  }
 
   getTermByIndex(targetIndex)
   {
@@ -42,21 +31,23 @@ class Document
 }
 
 
-class Term
+class Token
 {
   constructor()
   {
     //Represent the value of the term
     this.value="";
 
-    //Represent the frequency of the term in the container document
-    this.Frequency=0;
-
     //Represents the weight of the term in the term document matrix
-    this.Weight=0;
+    this.weight=0;
 
-    this.DocumentFreq=null;
+    this.documentFreq=null;
 
-    this.Stem=null;
+    this.stem=null;
+
+    this.frequency=0;
   }
 }
+
+
+var TermType={NormalText:1,Abbreviation:2};

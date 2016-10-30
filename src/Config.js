@@ -1821,13 +1821,32 @@ Zech:true,
 Zeitschr:true,
 Zeph:true,
 Zoogeogr:true,
-Zool:true
+Zool:true,
+mr:true,
+mrs:true
 };
 
 
 
 //Regular expression used to extract statment from a given quote
-var statmentDelimeters=/\(?[^\.\?\!]+[\.!\?]*\)?/gim ;
+var statmentDelimeters=/\(?[^\.\?\!\d+\.\d+]+[\.!\?\d+\.\d+]*\)?/gim ;
 
 //regular expression used to extraxr tokens from a give quote
-var tokenDelimeters=/\s+|,|\\+|\\-|\./;
+var tokenDelimeters=/\s+|,|\+|\-|\.(?!\d+)|\@|\||\?|\!/;
+
+
+function IsDefined(instance)
+{
+  return  instance!=null && instance!=undefined && typeof instance!=undefined ;
+}
+
+
+function IsNullOREmpty(instance)
+{
+  return  instance==null || instance==undefined || typeof instance==undefined || instance.trim()=="";
+}
+
+function IsTokenNumber(token)
+{
+  return token!=null && token.match(/^\d+$/)!=null;
+}
