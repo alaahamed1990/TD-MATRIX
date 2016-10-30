@@ -18,13 +18,13 @@ class DisJointSet
     }
   }
 
+  getSetHeader(setIndex)
+  {
+    return this.SetsHeaader[setIndex];
+  }
+
   AssignSetHeader(parentSetIndex,sentenceIndex,value)
   {
-    if(typeof(sentenceIndex)=="Sentence")
-    {
-      console.log(parentSetIndex);
-    }
-
     if(typeof this.SetsHeaader[parentSetIndex]==undefined || value>this.SetsHeaader[parent])
     {
      this.SetsHeaader[parentSetIndex]=sentenceIndex;

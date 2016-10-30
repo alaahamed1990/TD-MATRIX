@@ -1,5 +1,5 @@
 
-class TermDocTextParser
+class TDMATRIX
 {
 
   constructor()
@@ -10,6 +10,12 @@ class TermDocTextParser
   //Get Ecludian distance between two documtes
   GetDistance(sourceSentence,destSentence)
     {
+
+    if(!IsDefined(sourceSentence) || !IsDefined(destSentence) || !IsDefined(sourceSentence.terms) || !IsDefined(destSentence.terms))
+    {
+      return 0;
+    }
+
     var totaldistance=0;
 
     var processedTokens={};
@@ -25,8 +31,8 @@ class TermDocTextParser
 
         processedTokens[key]=true;
 
-        var sourceSentTermFreq=IsDefined(sourceSentence.terms[key])?sourceSentence.terms[key].Weight:0;
-        var destSentTermFreq=IsDefined(destSentence.terms[key])?destSentence.terms[key].Weight:0;
+        var sourceSentTermFreq=IsDefined(sourceSentence.terms[key])?sourceSentence.terms[key].weight:0;
+        var destSentTermFreq=IsDefined(destSentence.terms[key])?destSentence.terms[key].weight:0;
 
         totaldistance+=(Math.pow(sourceSentTermFreq-destSentTermFreq,2));
       }
@@ -40,8 +46,8 @@ class TermDocTextParser
 
         processedTokens[key]=true;
 
-        var sourceSentTermFreq=IsDefined(sourceSentence.terms[key])?sourceSentence.terms[key].Weight:0;
-        var destSentTermFreq=IsDefined(destSentence.terms[key])?destSentence.terms[key].Weight:0;
+        var sourceSentTermFreq=IsDefined(sourceSentence.terms[key])?sourceSentence.terms[key].weight:0;
+        var destSentTermFreq=IsDefined(destSentence.terms[key])?destSentence.terms[key].weight:0;
 
         totaldistance+=(Math.pow(sourceSentTermFreq-destSentTermFreq,2));
       }
@@ -52,20 +58,34 @@ class TermDocTextParser
   //Extract Documents class for pass quotes
    ExtractDocuments(quotes)
    {
+     if(!IsDefined(quotes))
+     {
+       return null;
+     }
+
+     if(quotes.length==0)
+     {
+       return [];
+     }
+
      var docFrequencies={};
 
      var result=[];
 
      for(var index in quotes)
      {
+
+    if(!IsNullOREmpty(quotes[index]))
+    {
      var document=new Document();
 
-     document.Value=quotes[index];
-
      //Extract Tokens
-     var tokens=this.ExtractTokens(quotes[index],document,docFrequencies);
+     var tokens=this.ExtractNormlizedTokens(quotes[index],document,docFrequencies);
+
+
 
      result.push(document);
+    }
      }
 
      return result;
@@ -74,6 +94,11 @@ class TermDocTextParser
   //Extract sentences from a quotation
   ExtractSentences(quote)
   {
+    if(IsNullOREmpty(quote))
+    {
+      return null;
+    }
+
     var resultSentences=[];
 
 
@@ -88,39 +113,32 @@ class TermDocTextParser
     var tmpDocument=new Document();
     var lastToken=null;
 
-    var counter=0;
 
     for(var sentenceIndex in sentences)
     {
-      sentences[sentenceIndex]=sentences[sentenceIndex].trim();
       //Ignore if sentence is Empty or undefined
-      if(!IsDefined(sentences[sentenceIndex]))
+      if(!IsDefined(sentences[sentenceIndex].trim()))
       {
+        tmpDocument=null;
         continue;
       }
 
-      var isFirstTokenNumber=sentences[sentenceIndex].match(/^\d+\s+/)!=null;
 
-      if(isEndOfSentence || (isLastTokenNumber && !isFirstTokenNumber))
+      this.ExtractNormlizedTokens(sentences[sentenceIndex],tmpDocument,docFrequencies);
+
+
+
+      if(tmpDocument.isEndedProperly)
       {
-        tmpDocument=new Document();
-        isEndOfSentence=true;
-        isLastTokenNumber=false;
-      }
-
-      lastToken=this.ExtractTokens(sentences[sentenceIndex],tmpDocument,docFrequencies);
-
-      isLastTokenNumber=IsTokenNumber(lastToken);
-
-      if(!abbrevations[lastToken] && !isLastTokenNumber)
-      {
-        tmpDocument.SetIndex=counter++;
         resultSentences.push(tmpDocument);
-        isEndOfSentence=true;
+
+        tmpDocument=new Document();
       }
-      else {
-        isEndOfSentence=false;
-      }
+    }
+
+    if(!IsNullOREmpty(tmpDocument.value))
+    {
+      resultSentences.push(tmpDocument);
     }
 
     return resultSentences;
@@ -128,37 +146,48 @@ class TermDocTextParser
 
 
   //Extract tokens for passed documents
-  ExtractTokens(quote,document,docFrequencies)
+  //Return true if passed document terms was modified and false if not
+  ExtractNormlizedTokens(quote,document,docFrequencies)
   {
-
-    if(!IsDefined(document))
+    if(!IsDefined(document) || IsNullOREmpty(quote))
     {
-      document=new Document();
+      return false;
     }
+
+    var isDocumentUpated=false;
 
     //Extract Tokens
     var tokens= quote.split(tokenDelimeters);
 
     //Check whether first token is number
-    var isFirstTokenNumber=IsTokenNumber(tokens[0]);
     //Create new statment in case last token isnot abbreviation
     //Or if last token  in previous statment is number and first token in the new statment isnot number
 
-    document.Value+=quote;
+    document.value+=quote;
 
     var lastToken=null;
 
     for(var tokenIndex in tokens)
     {
-      var currentToken= lastToken = tokens[tokenIndex];
+      var currentToken = tokens[tokenIndex];
 
 
       //remove if stop word
-      if(!IsDefined(currentToken) || stopWords[currentToken])
+      if(!IsDefined(currentToken) || IsNullOREmpty(currentToken))
       {
         continue;
       }
 
+      lastToken=currentToken;
+
+      if(stopWords[currentToken])
+      {
+        continue;
+      }
+
+
+
+      isDocumentUpated=true;
 
       //stemming
       var stemValue=memoizingStemmer(currentToken).toLowerCase();
@@ -166,84 +195,122 @@ class TermDocTextParser
       //In case token not exist in statment before
       if(!IsDefined(document.terms[stemValue]))
       {
-        document.terms[stemValue]=new Term();
+        document.terms[stemValue]=new Token();
         document.terms[stemValue].value=currentToken;
-        document.terms[stemValue].Stem=stemValue;
+        document.terms[stemValue].stem=stemValue;
 
         if(!IsDefined(docFrequencies[stemValue]))
         {
-          document.terms[currentToken].DocumentFreq= docFrequencies[stemValue]= {value:0};
+          document.terms[stemValue].documentFreq= docFrequencies[stemValue]= {value:0};
         }
-        else if(!IsDefined(document.terms[stemValue].DocumentFreq)) {
+        else if(!IsDefined(document.terms[stemValue].documentFreq)) {
 
-          document.terms[stemValue].DocumentFreq=docFrequencies[stemValue];
+          document.terms[stemValue].documentFreq=docFrequencies[stemValue];
         }
 
         docFrequencies[stemValue].value+=1;
       }
-      document.terms[stemValue].Frequency++;
+      document.terms[stemValue].weight=++document.terms[stemValue].frequency;
 
       document.length++;
     }
 
-    return lastToken;
+
+    if(abbrevations[lastToken]) {
+      document.isEndedProperly=false;
+    }
+    else {
+      document.isEndedProperly=true;
+    }
+    return isDocumentUpated;
   }
 
 
 
   //Apply term frequency on matrix
-  ApplyTf(documents,minTermWeight)
+  NormlizeTermsFrequency(documents,minTermWeight)
   {
+    if(!IsDefined(documents) || minTermWeight<0 || documents.length==0)
+    {
+      return false;
+    }
+
     for(var documentIndex in documents)
     {
       var currentDocument=documents[documentIndex];
 
+      var docLength=currentDocument.length;
+
       for(var termIndex in currentDocument.terms)
       {
         var currentTerm=currentDocument.terms[termIndex];
 
-        currentTerm.Weight=currentTerm.Frequency/currentDocument.length;
+        currentTerm.weight=currentTerm.frequency/docLength;
 
 
-        if(currentTerm.Weight<minTermWeight)
+        if(currentTerm.weight<minTermWeight)
         {
           delete currentDocument.terms[termIndex];
+
+          currentDocument.length--;
         }
       }
     }
+
+    return true;
   }
 
 
   //Apply term frquency and inverted document frequency on matrix
-  ApplyTfIDf(sentences,minTermWeight)
+  TFIDf(documents,minTermWeight)
   {
-    var totalNumberOfDocs=sentences.length;
-
-    for(var statmentIndex in sentences)
+   if(!IsDefined(documents) || minTermWeight<0 || documents.length==0)
     {
-      var currentDocument=sentences[statmentIndex];
+        return false;
+    }
+    var totalNumberOfDocs=documents.length;
+
+    for(var statmentIndex in documents)
+    {
+      var currentDocument=documents[statmentIndex];
 
       for(var termIndex in currentDocument.terms)
       {
         var currentTerm=currentDocument.terms[termIndex];
 
-        currentTerm.Weight=((currentTerm.Frequency/currentDocument.length)*Math.log10(totalNumberOfDocs/currentTerm.DocumentFreq.value));
+        currentTerm.weight=((currentTerm.frequency/currentDocument.length)*Math.log10(totalNumberOfDocs/currentTerm.documentFreq.value));
 
-        if(currentTerm.Weight<minTermWeight)
+        if(currentTerm.weight<minTermWeight)
         {
           delete currentDocument.terms[termIndex];
+
+          currentDocument.length--;
         }
       }
     }
+
+    return true;
   }
 
 
   //Extract disjoint set for passed documents
-  ExtractDisJointSet(documents,simThrShold)
+  ExtractDisjointSet(documents,simThrShold)
   {
+
+    if(!IsDefined(documents) || simThrShold<0 || documents.length==0)
+     {
+         return null;
+     }
+
   var documentSet=new DisJointSet();
 
   var calculatedDistances={};
+
+  if(documents.length==1)
+  {
+    documentSet.createset(0);
+    return documentSet;
+  }
 
   for(var i=0;i<documents.length-1;++i)
   {
@@ -254,8 +321,6 @@ class TermDocTextParser
     {
       var curretNodeParent=-1;
 
-      mainNodeParent=documentSet.find(i);
-      curretNodeParent=documentSet.find(s);
 
       var distance=-1;
 
@@ -268,18 +333,20 @@ class TermDocTextParser
      {
        calculatedDistances[s]=0;
      }
+
      distance=this.GetDistance(documents[i], documents[s]);
+
+     var mainNodeParent=documentSet.find(i);
+     var currentNodeParent=documentSet.find(s);
 
      var inSameSet=false;
 
-      if(curretNodeParent!=mainNodeParent)
+      if(mainNodeParent!=currentNodeParent)
       {
         if(distance<=simThrShold)
             {
-              mainNodeParent=documentSet.join(i,s);
+              mainNodeParent=curretNodeParent=documentSet.join(i,s);
 
-              documents[i].SetIndex=mainNodeParent;
-              documents[s].SetIndex=mainNodeParent;
               calculatedDistances[i]+=distance;
               calculatedDistances[s]+=distance;
               inSameSet=true;
@@ -300,19 +367,8 @@ class TermDocTextParser
 
     }
 
-    return {SetsHeaader:documentSet.SetsHeaader};
+    return documentSet;
   }
-}
 
 
-function IsDefined(instance)
-{
-  return instance!="" && instance!=null && typeof instance!=undefined;
-}
-
-
-
-function IsTokenNumber(token)
-{
-  return token!=null && token.match(/^\d+$/)!=null;
 }
