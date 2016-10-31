@@ -35,7 +35,7 @@ class Token
 {
   constructor()
   {
-    //Represent the value of the term
+    //Represent the original value of the term
     this.value="";
 
     //Represents the weight of the term in the term document matrix
