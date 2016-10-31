@@ -1,16 +1,15 @@
-class DisJointSet
+var DisJointSet=function()
 {
-  constructor()
-  {
+
     this.parent=[];
 
     this.rank=[];
 
     this.SetsHeaader=[];
-  }
 
 
-  createset(sentenceIndex)
+
+  this.createset=function(sentenceIndex)
   {
     if(!this.parent[sentenceIndex])
     {
@@ -18,12 +17,12 @@ class DisJointSet
     }
   }
 
-  getSetHeader(setIndex)
+  this.getSetHeader=function(setIndex)
   {
     return this.SetsHeaader[setIndex];
   }
 
-  AssignSetHeader(parentSetIndex,sentenceIndex,value)
+  this.AssignSetHeader=function(parentSetIndex,sentenceIndex,value)
   {
     if(typeof this.SetsHeaader[parentSetIndex]==undefined || value>this.SetsHeaader[parent])
     {
@@ -31,7 +30,7 @@ class DisJointSet
     }
   }
 
-  find(value)
+  this.find=function(value)
   {
     if(typeof this.parent[value]=='undefined')
     {
@@ -57,7 +56,7 @@ class DisJointSet
   }
 
 
-  join(firstStatmentIndex,secondStatmentIndex)
+  this.join=function(firstStatmentIndex,secondStatmentIndex)
   {
     var firstStatmentParent=this.find(firstStatmentIndex);
 
