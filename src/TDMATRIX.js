@@ -1,14 +1,9 @@
 
-class TDMATRIX
+var TDMATRIX=function()
 {
 
-  constructor()
-  {
-
-  }
-
   //Get Ecludian distance between two documtes
-  GetDistance(sourceSentence,destSentence)
+  this.GetDistance=function(sourceSentence,destSentence)
     {
 
     if(!IsDefined(sourceSentence) || !IsDefined(destSentence) || !IsDefined(sourceSentence.terms) || !IsDefined(destSentence.terms))
@@ -56,7 +51,7 @@ class TDMATRIX
     };
 
   //Extract Documents class for pass quotes
-   ExtractDocuments(quotes)
+   this.ExtractDocuments=function(quotes)
    {
      if(!IsDefined(quotes))
      {
@@ -92,7 +87,7 @@ class TDMATRIX
    };
 
   //Extract sentences from a quotation
-  ExtractSentences(quote)
+  this.ExtractSentences=function(quote)
   {
     if(IsNullOREmpty(quote))
     {
@@ -147,7 +142,7 @@ class TDMATRIX
 
   //Extract tokens for passed documents
   //Return true if passed document terms was modified and false if not
-  ExtractNormlizedTokens(quote,document,docFrequencies)
+  this.ExtractNormlizedTokens=function(quote,document,docFrequencies)
   {
     if(!IsDefined(document) || IsNullOREmpty(quote))
     {
@@ -228,7 +223,7 @@ class TDMATRIX
 
 
   //Apply term frequency on matrix
-  NormlizeTermsFrequency(documents,minTermWeight)
+  this.NormlizeTermsFrequency=function(documents,minTermWeight)
   {
     if(!IsDefined(documents) || minTermWeight<0 || documents.length==0)
     {
@@ -262,7 +257,7 @@ class TDMATRIX
 
 
   //Apply term frquency and inverted document frequency on matrix
-  TFIDf(documents,minTermWeight)
+  this.TFIDf=function(documents,minTermWeight)
   {
    if(!IsDefined(documents) || minTermWeight<0 || documents.length==0)
     {
@@ -294,7 +289,7 @@ class TDMATRIX
 
 
   //Extract disjoint set for passed documents
-  ExtractDisjointSet(documents,simThrShold)
+  this.ExtractDisjointSet=function(documents,simThrShold)
   {
 
     if(!IsDefined(documents) || simThrShold<0 || documents.length==0)
