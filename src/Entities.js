@@ -48,6 +48,3 @@ class Token
     this.frequency=0;
   }
 }
-
-
-var TermType={NormalText:1,Abbreviation:2};
