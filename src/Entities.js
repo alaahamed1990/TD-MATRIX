@@ -1,8 +1,6 @@
 
-class Document
+var Document=function()
 {
-  constructor()
-  {
 
     this.value="";
 
@@ -12,11 +10,9 @@ class Document
     this.length=0;
 
     this.isEndedProperly=null;
-  }
 
 
-
-  getTermByIndex(targetIndex)
+  this.getTermByIndex=function(targetIndex)
   {
     var counter=0;
 
@@ -31,10 +27,8 @@ class Document
 }
 
 
-class Token
+var Token=function()
 {
-  constructor()
-  {
     //Represent the original value of the term
     this.value="";
 
@@ -46,5 +40,4 @@ class Token
     this.stem=null;
 
     this.frequency=0;
-  }
 }
