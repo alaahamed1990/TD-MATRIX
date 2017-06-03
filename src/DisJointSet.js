@@ -32,7 +32,7 @@ var DisJointSet=function()
 
   this.find=function(value)
   {
-    if(typeof this.parent[value]=='undefined')
+    if(!this.parent[value])
     {
       this.parent[value]=value;
 
